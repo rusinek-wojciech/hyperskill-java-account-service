@@ -1,9 +1,11 @@
 package account.service;
 
 import account.dto.PasswordStatusDto;
-import account.dto.PasswordUpdateDto;
 import account.dto.UserCreateDto;
 import account.dto.UserGetDto;
+import account.exception.PasswordBreachedException;
+import account.exception.PasswordSameException;
+import account.exception.UserExistException;
 import account.mapper.Mapper;
 import account.model.User;
 import account.repository.UserRepository;
@@ -44,15 +46,11 @@ public class UserService implements UserDetailsService {
 
     public UserGetDto signUp(UserCreateDto userCreateDto) {
         logger.info("Registering \"" + userCreateDto + "\"");
-
-        boolean isPasswordBreached = Arrays.asList(breachedPasswords)
-                .contains(userCreateDto.getPassword());
-        if (isPasswordBreached) {
-            throw new PasswordBreachedException();
-        }
+        userCreateDto.setEmail(userCreateDto.getEmail().toLowerCase());
+        breachedPassword(userCreateDto.getPassword());
 
         boolean isUserPresent = userRepository
-                .findByUsername(userCreateDto.getEmail().toLowerCase())
+                .findByUsername(userCreateDto.getEmail())
                 .isPresent();
         if (isUserPresent) {
             throw new UserExistException();
@@ -66,14 +64,10 @@ public class UserService implements UserDetailsService {
     @Transactional
     public PasswordStatusDto changePassword(String password, String username) {
         logger.info("Changing password \"" + username + "\"");
-
-        boolean isPasswordBreached = Arrays.asList(breachedPasswords).contains(password);
-        if (isPasswordBreached) {
-            throw new PasswordBreachedException();
-        }
+        breachedPassword(password);
 
         User user = loadUserByUsername(username);
-        if (password.equals(user.getPassword())) {
+        if ( passwordEncoder.matches(password, user.getPassword())) {
             throw new PasswordSameException();
         }
 
@@ -93,5 +87,12 @@ public class UserService implements UserDetailsService {
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    private void breachedPassword(String password) {
+        boolean isPasswordBreached = Arrays.asList(breachedPasswords).contains(password);
+        if (isPasswordBreached) {
+            throw new PasswordBreachedException();
+        }
     }
 }

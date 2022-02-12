@@ -18,12 +18,12 @@ public class Mapper {
     }
 
     public User userCreateDtoToUser(UserCreateDto userCreateDto) {
-        return new User(
-                userCreateDto.getName(),
-                userCreateDto.getLastname(),
-                userCreateDto.getEmail().toLowerCase(),
-                userCreateDto.getPassword()
-        );
+        return User.builder()
+                .name(userCreateDto.getName())
+                .lastname(userCreateDto.getLastname())
+                .username(userCreateDto.getEmail())
+                .password(userCreateDto.getPassword())
+                .build();
     }
 
 }

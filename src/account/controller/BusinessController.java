@@ -1,6 +1,6 @@
 package account.controller;
 
-import account.config.AuthFacade;
+import account.service.AuthFacade;
 import account.dto.UserGetDto;
 import account.service.UserService;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,7 @@
 package account.service;
 
 import account.dto.PasswordStatusDto;
+import account.dto.PasswordUpdateDto;
 import account.dto.UserCreateDto;
 import account.dto.UserGetDto;
 import account.exception.PasswordBreachedException;
@@ -10,26 +11,26 @@ import account.mapper.Mapper;
 import account.model.User;
 import account.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Mapper mapper;
+    private final AuthFacade authFacade;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private static final String[] breachedPasswords = {
+    private static final List<String> breachedPasswords = List.of(
             "PasswordForJanuary",
             "PasswordForFebruary",
             "PasswordForMarch",
@@ -42,17 +43,21 @@ public class UserService implements UserDetailsService {
             "PasswordForOctober",
             "PasswordForNovember",
             "PasswordForDecember"
-    };
+    );
 
     public UserGetDto signUp(UserCreateDto userCreateDto) {
-        logger.info("Registering \"" + userCreateDto + "\"");
+        log.info("Registering \"" + userCreateDto + "\"");
         userCreateDto.setEmail(userCreateDto.getEmail().toLowerCase());
-        breachedPassword(userCreateDto.getPassword());
 
-        boolean isUserPresent = userRepository
+        boolean isPasswordBreached = breachedPasswords.contains(userCreateDto.getPassword());
+        if (isPasswordBreached) {
+            throw new PasswordBreachedException();
+        }
+
+        boolean isUserExist = userRepository
                 .findByUsername(userCreateDto.getEmail())
                 .isPresent();
-        if (isUserPresent) {
+        if (isUserExist) {
             throw new UserExistException();
         }
 
@@ -62,12 +67,23 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public PasswordStatusDto changePassword(String password, String username) {
-        logger.info("Changing password \"" + username + "\"");
-        breachedPassword(password);
+    public PasswordStatusDto changePassword(PasswordUpdateDto passwordUpdateDto) {
+        String username = authFacade.getAuth().getName();
+        return changePassword(passwordUpdateDto.getNewPassword(), username);
+    }
 
-        User user = loadUserByUsername(username);
-        if ( passwordEncoder.matches(password, user.getPassword())) {
+    @Transactional
+    public PasswordStatusDto changePassword(String password, String username) {
+        log.info("Changing password \"" + username + "\"");
+
+        boolean isPasswordBreached = breachedPasswords.contains(password);
+        if (isPasswordBreached) {
+            throw new PasswordBreachedException();
+        }
+
+        boolean isPasswordSame = passwordEncoder
+                .matches(password, loadUserByUsername(username).getPassword());
+        if (isPasswordSame) {
             throw new PasswordSameException();
         }
 
@@ -89,10 +105,4 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
-    private void breachedPassword(String password) {
-        boolean isPasswordBreached = Arrays.asList(breachedPasswords).contains(password);
-        if (isPasswordBreached) {
-            throw new PasswordBreachedException();
-        }
-    }
 }

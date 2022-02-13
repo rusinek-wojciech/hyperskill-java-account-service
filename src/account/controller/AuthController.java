@@ -1,6 +1,5 @@
 package account.controller;
 
-import account.config.AuthFacade;
 import account.dto.PasswordStatusDto;
 import account.dto.PasswordUpdateDto;
 import account.dto.UserCreateDto;
@@ -18,7 +17,6 @@ import javax.validation.Valid;
 public class AuthController {
 
     private final UserService userService;
-    private final AuthFacade authFacade;
 
     @PostMapping("api/auth/signup")
     public UserGetDto signUp(@RequestBody @Valid UserCreateDto userCreateDto) {
@@ -27,10 +25,7 @@ public class AuthController {
 
     @PostMapping("api/auth/changepass")
     public PasswordStatusDto changePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto) {
-        return userService.changePassword(
-                passwordUpdateDto.getNewPassword(),
-                authFacade.getAuth().getName()
-        );
+        return userService.changePassword(passwordUpdateDto);
     }
 
 }

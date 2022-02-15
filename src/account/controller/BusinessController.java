@@ -1,33 +1,51 @@
 package account.controller;
 
-import account.service.AuthFacade;
-import account.dto.UserGetDto;
-import account.service.UserService;
+import account.dto.PaymentPostDto;
+import account.dto.PaymentStatusDto;
+import account.model.User;
+import account.service.BusinessService;
+import account.util.ValidList;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("api")
 public class BusinessController {
 
-    private final UserService userService;
-    private final AuthFacade authFacade;
+    private final BusinessService businessService;
 
-    @GetMapping("api/empl/payment")
-    public UserGetDto getPayment() {
-        return userService.findUser(authFacade.getAuth().getName());
+    @GetMapping("empl/payment")
+    public ResponseEntity<?> getPayment(@RequestParam Optional<String> period,
+                                        @AuthenticationPrincipal User user) {
+        if (period.isPresent()) {
+
+            if (!period.get().matches("(0?[1-9]|1[0-2])-\\d+")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid period param");
+            }
+
+            return ResponseEntity.ok(businessService.getUserPaymentByPeriod(period.get()));
+        }
+        return ResponseEntity.ok(businessService.getUserPayments());
     }
 
-    @PostMapping("api/acct/payments")
-    public void uploadPayment() {
 
+    @PostMapping("acct/payments")
+    public PaymentStatusDto uploadPayment(@RequestBody @Valid ValidList<PaymentPostDto> payments) {
+        return businessService.uploadPayment(payments);
     }
 
-    @PutMapping("api/acct/payments")
-    public void updatePayment() {
-
+    @PutMapping("acct/payments")
+    public PaymentStatusDto updatePayment(@RequestBody @Valid PaymentPostDto payment) {
+        return businessService.updatePayment(payment);
     }
+
 }

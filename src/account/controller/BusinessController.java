@@ -5,13 +5,11 @@ import account.dto.PaymentStatusDto;
 import account.model.User;
 import account.service.BusinessService;
 import account.util.ValidList;
+import account.validator.Validators;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -27,14 +25,10 @@ public class BusinessController {
     public ResponseEntity<?> getPayment(@RequestParam Optional<String> period,
                                         @AuthenticationPrincipal User user) {
         if (period.isPresent()) {
-
-            if (!period.get().matches("(0?[1-9]|1[0-2])-\\d+")) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid period param");
-            }
-
-            return ResponseEntity.ok(businessService.getUserPaymentByPeriod(period.get()));
+            Validators.validatePeriod(period.get());
+            return ResponseEntity.ok(businessService.getUserPaymentByPeriod(user, period.get()));
         }
-        return ResponseEntity.ok(businessService.getUserPayments());
+        return ResponseEntity.ok(businessService.getUserPayments(user));
     }
 
 

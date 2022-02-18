@@ -9,12 +9,19 @@ public enum Role implements GrantedAuthority {
     ACCOUNTANT,
     ADMINISTRATOR;
 
+    /**
+     * for annotations
+     */
+    public static final String ROLE_USER = "ROLE_USER";
+    public static final String ROLE_ACCOUNTANT = "ROLE_ACCOUNTANT";
+    public static final String ROLE_ADMINISTRATOR= "ROLE_ADMINISTRATOR";
+
     RoleEntity toRoleEntity(RoleRepository repository) {
         return repository.findByRole(this).orElseThrow();
     }
 
     @Override
     public String getAuthority() {
-        return name();
+        return "ROLE_" + name();
     }
 }

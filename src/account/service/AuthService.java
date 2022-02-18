@@ -27,7 +27,7 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final Mapper mapper;
 
-    public GetUserDto signUp(CreateUserDto createUserDto) {
+    public GetUserDto register(CreateUserDto createUserDto) {
         log.info("Registering \"" + createUserDto + "\"");
         createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
         Validators.validatePasswordBreached(createUserDto.getPassword());

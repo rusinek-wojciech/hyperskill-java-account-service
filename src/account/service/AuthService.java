@@ -1,18 +1,22 @@
 package account.service;
 
-import account.dto.PasswordStatusDto;
-import account.dto.UserCreateDto;
-import account.dto.UserGetDto;
+import account.dto.user.CreateUserDto;
+import account.dto.user.GetUserDto;
 import account.exception.ValidException;
 import account.mapper.Mapper;
+import account.model.Role;
 import account.model.User;
+import account.repository.RoleRepository;
 import account.repository.UserRepository;
+import account.util.ResponseStatus;
 import account.validator.Validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
+import java.util.Set;
 
 @AllArgsConstructor
 @Service
@@ -21,34 +25,35 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     private final Mapper mapper;
 
-    public UserGetDto signUp(UserCreateDto userCreateDto) {
-        log.info("Registering \"" + userCreateDto + "\"");
-        userCreateDto.setEmail(userCreateDto.getEmail().toLowerCase());
-        Validators.validatePasswordBreached(userCreateDto.getPassword());
+    public GetUserDto signUp(CreateUserDto createUserDto) {
+        log.info("Registering \"" + createUserDto + "\"");
+        createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
+        Validators.validatePasswordBreached(createUserDto.getPassword());
 
         boolean isUserExist = userRepository
-                .findByUsername(userCreateDto.getEmail())
+                .findByUsername(createUserDto.getEmail())
                 .isPresent();
         if (isUserExist) {
             throw new ValidException("User exist!");
         }
 
-        userCreateDto.setPassword(passwordEncoder.encode(userCreateDto.getPassword()));
-        User user = userRepository.save(mapper.userCreateDtoToUser(userCreateDto));
-        return mapper.userToUserGetDto(user);
+        createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
+        User user = mapper.createUserDtoToUser(createUserDto, Set.of(Role.USER), roleRepository);
+        return mapper.userToGetUserDto(userRepository.save(user));
     }
 
     @Transactional
-    public PasswordStatusDto changePassword(User user, String password) {
+    public ResponseEntity<?> changePassword(User user, String password) {
         log.info("Changing password \"" + user.getUsername() + "\"");
         Validators.validatePasswordBreached(password);
         Validators.validatePasswordSame(password, user, passwordEncoder);
         userRepository.updatePassword(passwordEncoder.encode(password), user.getUsername());
-        return PasswordStatusDto.builder()
-                .email(user.getUsername())
-                .status("The password has been updated successfully")
+        return ResponseStatus.builder()
+                .add("email", user.getUsername())
+                .add("status", "The password has been updated successfully")
                 .build();
     }
 }

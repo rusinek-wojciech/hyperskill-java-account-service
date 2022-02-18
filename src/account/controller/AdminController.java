@@ -1,9 +1,10 @@
 package account.controller;
 
-import account.dto.DeleteUserStatusDto;
-import account.dto.UserGetDto;
+import account.dto.user.GetUserDto;
+import account.dto.user.UpdateRoleUserDto;
 import account.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +17,18 @@ public class AdminController {
     private final UserService userService;
 
     @PutMapping("user/role")
-    public void updateUserRole() {
-
+    public GetUserDto updateUserRole(@RequestBody UpdateRoleUserDto updateRoleUserDto) {
+        return userService.changeUserRole(updateRoleUserDto);
     }
 
     @DeleteMapping("user/{username}")
-    public DeleteUserStatusDto deleteUser(@PathVariable String username) {
+    public ResponseEntity<?> deleteUser(@PathVariable String username) {
         return userService.deleteUser(username);
     }
 
     @GetMapping("user")
-    public List<UserGetDto> getUser() {
+    public List<GetUserDto> getUser() {
         return userService.getAllUsers();
     }
+
 }

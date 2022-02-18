@@ -1,4 +1,4 @@
-package account.dto;
+package account.dto.payment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentGetDto {
+public class GetPaymentDto {
 
     private String name;
     private String lastname;

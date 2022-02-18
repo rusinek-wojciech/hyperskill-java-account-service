@@ -1,7 +1,6 @@
 package account.controller;
 
-import account.dto.PaymentPostDto;
-import account.dto.PaymentStatusDto;
+import account.dto.payment.PostPaymentDto;
 import account.model.User;
 import account.service.BusinessService;
 import account.util.ValidList;
@@ -33,12 +32,12 @@ public class BusinessController {
 
 
     @PostMapping("acct/payments")
-    public PaymentStatusDto uploadPayment(@RequestBody @Valid ValidList<PaymentPostDto> payments) {
+    public ResponseEntity<?> uploadPayment(@RequestBody @Valid ValidList<PostPaymentDto> payments) {
         return businessService.uploadPayment(payments);
     }
 
     @PutMapping("acct/payments")
-    public PaymentStatusDto updatePayment(@RequestBody @Valid PaymentPostDto payment) {
+    public ResponseEntity<?> updatePayment(@RequestBody @Valid PostPaymentDto payment) {
         return businessService.updatePayment(payment);
     }
 

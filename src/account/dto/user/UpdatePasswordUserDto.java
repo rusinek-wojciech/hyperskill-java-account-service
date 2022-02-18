@@ -1,4 +1,4 @@
-package account.dto;
+package account.dto.user;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PasswordUpdateDto {
+public class UpdatePasswordUserDto {
 
     @NotNull(message = "New password cannot be null")
     @NotBlank(message = "New password cannot be blank")

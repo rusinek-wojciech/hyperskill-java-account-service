@@ -1,20 +1,24 @@
 package account.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import account.repository.RoleRepository;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class User implements UserDetails {
 
     @Id
@@ -36,51 +40,35 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments;
 
-    public Long getId() {
-        return id;
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns =@JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles;
+
+    public void addRole(Role role, RoleRepository roleRepository) {
+        roles.add(Role.roleToRoleEntity(role, roleRepository));
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void removeRole(Role role) {
+        roles.removeIf((r) -> r.getRole() == role);
     }
 
-    public String getName() {
-        return name;
+    public Set<Role> getRoles() {
+        return roles.stream()
+                .map(RoleEntity::getRole)
+                .collect(Collectors.toSet());
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setRoles(Set<Role> roles, RoleRepository roleRepository) {
+        this.roles = Role.rolesToRoleEntities(roles, roleRepository);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.username;
     }
 
     @Override
@@ -102,4 +90,32 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username);
+    }
+
+    /**
+     * Override Lombok builder
+     */
+    public static class UserBuilder {
+
+        private Set<RoleEntity> roles;
+
+        public UserBuilder roles(Set<Role> roles, RoleRepository roleRepository) {
+            this.roles = Role.rolesToRoleEntities(roles, roleRepository);
+            return this;
+        }
+    }
+
+
 }

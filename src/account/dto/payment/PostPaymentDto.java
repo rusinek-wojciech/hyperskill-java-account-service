@@ -1,4 +1,4 @@
-package account.dto;
+package account.dto.payment;
 
 import javax.validation.constraints.*;
 
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentPostDto {
+public class PostPaymentDto {
 
     @NotNull(message = "Employee cannot be null")
     @NotBlank(message = "Employee cannot be blank")

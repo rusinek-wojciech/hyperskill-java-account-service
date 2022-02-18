@@ -1,6 +1,6 @@
 package account.validator;
 
-import account.dto.PaymentPostDto;
+import account.dto.payment.PostPaymentDto;
 import account.exception.ValidException;
 import account.model.Payment;
 import account.model.User;
@@ -58,9 +58,9 @@ public class Validators {
         }
     }
 
-    public static void validateIsOneUser(List<PaymentPostDto> payments) {
+    public static void validateIsOneUser(List<PostPaymentDto> payments) {
         long users = payments.stream()
-                .map(PaymentPostDto::getEmployee)
+                .map(PostPaymentDto::getEmployee)
                 .map(String::toLowerCase)
                 .distinct()
                 .count();

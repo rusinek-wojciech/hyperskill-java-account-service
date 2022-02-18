@@ -1,4 +1,4 @@
-package account.dto;
+package account.dto.user;
 
 import javax.validation.constraints.*;
 import lombok.*;
@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserCreateDto {
+public class CreateUserDto {
 
     @NotNull(message = "Name cannot be null")
     @NotBlank(message = "Name cannot be blank")

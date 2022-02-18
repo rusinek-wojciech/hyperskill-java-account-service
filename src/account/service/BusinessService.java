@@ -4,7 +4,7 @@ import account.dto.payment.GetPaymentDto;
 import account.dto.payment.PostPaymentDto;
 import account.mapper.Mapper;
 import account.model.Payment;
-import account.model.User;
+import account.model.user.User;
 import account.repository.PaymentRepository;
 import account.util.ResponseStatus;
 import account.validator.Validators;

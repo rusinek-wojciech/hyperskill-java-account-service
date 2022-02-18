@@ -3,7 +3,7 @@ package account.controller;
 import account.dto.user.UpdatePasswordUserDto;
 import account.dto.user.CreateUserDto;
 import account.dto.user.GetUserDto;
-import account.model.User;
+import account.model.user.User;
 import account.service.AuthService;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;

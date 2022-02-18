@@ -2,11 +2,10 @@ package account.service;
 
 import account.dto.user.CreateUserDto;
 import account.dto.user.GetUserDto;
-import account.exception.ValidException;
 import account.mapper.Mapper;
-import account.model.Role;
-import account.model.User;
+import account.model.user.Role;
 import account.repository.RoleRepository;
+import account.model.user.User;
 import account.repository.UserRepository;
 import account.util.ResponseStatus;
 import account.validator.Validators;
@@ -32,14 +31,7 @@ public class AuthService {
         log.info("Registering \"" + createUserDto + "\"");
         createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
         Validators.validatePasswordBreached(createUserDto.getPassword());
-
-        boolean isUserExist = userRepository
-                .findByUsername(createUserDto.getEmail())
-                .isPresent();
-        if (isUserExist) {
-            throw new ValidException("User exist!");
-        }
-
+        Validators.validateUserExist(createUserDto.getEmail(), userRepository);
         createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
         User user = mapper.createUserDtoToUser(createUserDto, Set.of(Role.USER), roleRepository);
         return mapper.userToGetUserDto(userRepository.save(user));

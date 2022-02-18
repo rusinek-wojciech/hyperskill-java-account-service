@@ -1,4 +1,4 @@
-package account.model;
+package account.model.user;
 
 import lombok.*;
 

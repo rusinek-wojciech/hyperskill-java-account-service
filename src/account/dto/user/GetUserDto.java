@@ -1,6 +1,6 @@
 package account.dto.user;
 
-import account.model.Role;
+import account.model.user.Role;
 import lombok.*;
 
 import java.util.Set;

@@ -1,7 +1,7 @@
 package account.controller;
 
 import account.dto.payment.PostPaymentDto;
-import account.model.User;
+import account.model.user.User;
 import account.service.BusinessService;
 import account.util.ValidList;
 import account.validator.Validators;

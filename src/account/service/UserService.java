@@ -3,7 +3,7 @@ package account.service;
 import account.dto.user.GetUserDto;
 import account.dto.user.UpdateRoleUserDto;
 import account.mapper.Mapper;
-import account.model.User;
+import account.model.user.User;
 import account.repository.RoleRepository;
 import account.repository.UserRepository;
 import account.util.ResponseStatus;

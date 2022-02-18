@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * for providing custom response body
+ */
 public final class ResponseStatus {
 
     private final Map<String, Object> map = new LinkedHashMap<>();
@@ -21,7 +24,7 @@ public final class ResponseStatus {
         return this;
     }
 
-    public ResponseEntity<Map<String, Object>> build() {
+    public ResponseEntity<Object> build() {
         return ResponseEntity.status(httpStatus).body(map);
     }
 

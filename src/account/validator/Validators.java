@@ -3,9 +3,8 @@ package account.validator;
 import account.dto.payment.PostPaymentDto;
 import account.exception.ValidException;
 import account.model.Payment;
-import account.model.User;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import account.model.user.User;
+import account.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -69,20 +68,21 @@ public class Validators {
         }
     }
 
+    /**
+     * @param payments must implement equals and hashcode by username and period
+     */
     public static void validateDistinctPeriodUserPairs(List<Payment> payments) {
-        long distinctCount = payments.stream()
-                .map(p -> new DoubleEqual<>(p.getUser().getUsername(), p.getPeriod()))
-                .distinct()
-                .count();
+        long distinctCount = payments.stream().distinct().count();
         if (distinctCount != payments.size()) {
             throw new ValidException("Employee-period pair must be unique");
         }
     }
 
-    @AllArgsConstructor
-    @EqualsAndHashCode
-    private static class DoubleEqual<P, T> {
-        private P p;
-        private T t;
+    public static void validateUserExist(String username, UserRepository repository) {
+        if (repository.findByUsername(username).isPresent()) {
+            throw new ValidException("User exist!");
+        }
     }
+
+
 }

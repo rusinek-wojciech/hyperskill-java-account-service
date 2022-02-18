@@ -1,6 +1,6 @@
 package account.repository;
 
-import account.model.User;
+import account.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

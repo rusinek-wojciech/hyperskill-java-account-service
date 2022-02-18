@@ -1,5 +1,6 @@
-package account.model;
+package account.model.user;
 
+import account.model.Payment;
 import account.repository.RoleRepository;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -42,14 +43,14 @@ public class User implements UserDetails {
 
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
-            name = "users_roles",
+            name = "user_roles",
             joinColumns =@JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<RoleEntity> roles;
 
-    public void addRole(Role role, RoleRepository roleRepository) {
-        roles.add(Role.roleToRoleEntity(role, roleRepository));
+    public void addRole(Role role, RoleRepository repository) {
+        roles.add(role.toRoleEntity(repository));
     }
 
     public void removeRole(Role role) {
@@ -62,8 +63,8 @@ public class User implements UserDetails {
                 .collect(Collectors.toSet());
     }
 
-    public void setRoles(Set<Role> roles, RoleRepository roleRepository) {
-        this.roles = Role.rolesToRoleEntities(roles, roleRepository);
+    public void setRoles(Set<Role> roles, RoleRepository repository) {
+        this.roles = roles.stream().map(r -> r.toRoleEntity(repository)).collect(Collectors.toSet());
     }
 
     @Override
@@ -111,11 +112,10 @@ public class User implements UserDetails {
 
         private Set<RoleEntity> roles;
 
-        public UserBuilder roles(Set<Role> roles, RoleRepository roleRepository) {
-            this.roles = Role.rolesToRoleEntities(roles, roleRepository);
+        public UserBuilder roles(Set<Role> roles, RoleRepository repository) {
+            this.roles = roles.stream().map(r -> r.toRoleEntity(repository)).collect(Collectors.toSet());
             return this;
         }
     }
-
 
 }

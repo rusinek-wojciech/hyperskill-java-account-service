@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class Mapper {
@@ -24,7 +25,7 @@ public class Mapper {
                 .name(user.getName())
                 .lastname(user.getLastname())
                 .email(user.getUsername())
-                .roles(user.getRoles())
+                .roles(user.getRoles().stream().map(Role::getAuthority).collect(Collectors.toSet()))
                 .build();
     }
 

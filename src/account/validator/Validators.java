@@ -3,6 +3,7 @@ package account.validator;
 import account.dto.payment.PostPaymentDto;
 import account.exception.ValidException;
 import account.model.Payment;
+import account.model.user.Role;
 import account.model.user.User;
 import account.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -78,11 +79,16 @@ public class Validators {
         }
     }
 
-    public static void validateUserExist(String username, UserRepository repository) {
-        if (repository.findByUsername(username).isPresent()) {
-            throw new ValidException("User exist!");
+    public static void validateRemoveUserRole(Set<Role> roles, Role roleToRemove) {
+        if (roleToRemove == Role.ADMINISTRATOR) {
+            throw new ValidException("Can't remove ADMINISTRATOR role!");
+        }
+        if (!roles.contains(roleToRemove)) {
+            throw new ValidException("The user does not have a role!");
+        }
+        if (roles.size() == 1) {
+            throw new ValidException("The user must have at least one role!");
         }
     }
-
 
 }

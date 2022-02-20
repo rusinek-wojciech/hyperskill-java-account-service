@@ -2,6 +2,7 @@ package account.service;
 
 import account.dto.user.CreateUserDto;
 import account.dto.user.GetUserDto;
+import account.exception.ValidException;
 import account.mapper.Mapper;
 import account.model.user.Role;
 import account.repository.RoleRepository;
@@ -28,12 +29,19 @@ public class AuthService {
     private final Mapper mapper;
 
     public GetUserDto register(CreateUserDto createUserDto) {
-        log.info("Registering \"" + createUserDto + "\"");
+        Role role = userRepository.count() == 0L
+                ? Role.ADMINISTRATOR
+                : Role.USER;
+        log.info("Registering \"" + createUserDto.getEmail() + "\" as " + role);
         createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
+
         Validators.validatePasswordBreached(createUserDto.getPassword());
-        Validators.validateUserExist(createUserDto.getEmail(), userRepository);
+        if (userRepository.findByUsername(createUserDto.getEmail()).isPresent()) {
+            throw new ValidException("User exist!");
+        }
+
         createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
-        User user = mapper.createUserDtoToUser(createUserDto, Set.of(Role.USER), roleRepository);
+        User user = mapper.createUserDtoToUser(createUserDto, Set.of(role), roleRepository);
         return mapper.userToGetUserDto(userRepository.save(user));
     }
 

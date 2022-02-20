@@ -1,20 +1,19 @@
 package account.model.user;
 
 import account.repository.RoleRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 
+@AllArgsConstructor
+@Getter
 public enum Role implements GrantedAuthority {
 
-    USER,
-    ACCOUNTANT,
-    ADMINISTRATOR;
+    USER(RoleGroup.BUSINESS),
+    ACCOUNTANT(RoleGroup.BUSINESS),
+    ADMINISTRATOR(RoleGroup.ADMINISTRATIVE);
 
-    /**
-     * for annotations
-     */
-    public static final String ROLE_USER = "ROLE_USER";
-    public static final String ROLE_ACCOUNTANT = "ROLE_ACCOUNTANT";
-    public static final String ROLE_ADMINISTRATOR= "ROLE_ADMINISTRATOR";
+    private final RoleGroup group;
 
     RoleEntity toRoleEntity(RoleRepository repository) {
         return repository.findByRole(this).orElseThrow();
@@ -23,5 +22,10 @@ public enum Role implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return "ROLE_" + name();
+    }
+
+    @Override
+    public String toString() {
+        return name();
     }
 }

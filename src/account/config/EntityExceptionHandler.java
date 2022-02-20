@@ -1,6 +1,7 @@
 package account.config;
 
 import account.util.ResponseStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.Date;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ControllerAdvice
 public class EntityExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -27,6 +29,7 @@ public class EntityExceptionHandler extends ResponseEntityExceptionHandler {
         String message = exception.getBindingResult().getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.joining(", "));
+        log.warn(exception.toString());
         return ResponseStatus.builder()
                 .add("timestamp", new Date().toString())
                 .add("status", status.value())

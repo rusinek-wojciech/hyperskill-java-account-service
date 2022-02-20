@@ -1,10 +1,12 @@
 package account.dto.user;
 
-import account.model.user.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -12,11 +14,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdateRoleUserDto {
 
+    @NotNull(message = "User cannot be null")
+    @NotBlank(message = "User cannot be blank")
     private String user;
-    private Role role;
-    private Operation operation;
 
-    public enum Operation {
-        GRANT, REMOVE
-    }
+    @NotNull(message = "Role cannot be null")
+    private String role;
+
+    @NotNull(message = "Operation cannot be null")
+    private String operation;
+
 }

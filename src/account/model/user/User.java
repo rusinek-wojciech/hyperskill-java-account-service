@@ -65,6 +65,13 @@ public class User implements UserDetails {
         this.roles = roles.stream().map(r -> r.toRoleEntity(repository)).collect(Collectors.toSet());
     }
 
+    public RoleGroup getUserRoleGroup() {
+        return getRoles().stream()
+                .map(Role::getGroup)
+                .findFirst()
+                .orElseThrow();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getRoles().stream()

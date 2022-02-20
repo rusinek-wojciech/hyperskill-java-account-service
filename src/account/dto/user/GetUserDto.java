@@ -1,6 +1,5 @@
 package account.dto.user;
 
-import account.model.user.Role;
 import lombok.*;
 
 import java.util.Set;
@@ -15,6 +14,6 @@ public class GetUserDto {
     private String name;
     private String lastname;
     private String email;
-    private Set<Role> roles;
+    private Set<String> roles;
 
 }

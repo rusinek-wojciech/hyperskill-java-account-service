@@ -7,6 +7,7 @@ import account.model.Payment;
 import account.model.user.User;
 import account.repository.PaymentRepository;
 import account.util.ResponseStatus;
+import account.util.ValidList;
 import account.validator.Validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;

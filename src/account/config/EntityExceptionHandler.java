@@ -26,10 +26,10 @@ public class EntityExceptionHandler extends ResponseEntityExceptionHandler {
             HttpHeaders headers,
             HttpStatus status,
             WebRequest request) {
+        log.warn(exception.toString());
         String message = exception.getBindingResult().getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        log.warn(exception.toString());
         return ResponseStatus.builder()
                 .add("timestamp", new Date().toString())
                 .add("status", status.value())

@@ -66,6 +66,7 @@ public class UserService implements UserDetailsService {
         if (user.getUserRoleGroup() != role.getGroup()) {
             throw new ValidException("The user cannot combine administrative and business roles!");
         }
+        log.info("Adding user \"" + username + "\" role " + role);
         user.addRole(role, roleRepository);
         return mapper.userToGetUserDto(userRepository.save(user));
     }
@@ -74,6 +75,7 @@ public class UserService implements UserDetailsService {
         User user = loadUserByUsername(username);
         Validators.validateRemoveUserRole(user.getRoles(), role);
         user.removeRole(role);
+        log.info("Removing user \"" + username + "\" role " + role);
         return mapper.userToGetUserDto(userRepository.save(user));
     }
 
@@ -83,6 +85,7 @@ public class UserService implements UserDetailsService {
         if (user.getRoles().contains(Role.ADMINISTRATOR)) {
             throw new ValidException("Can't remove ADMINISTRATOR role!");
         }
+        log.info("Deleting user \"" + username + "\"");
         userRepository.deleteByUsername(username);
         return ResponseStatus.builder()
                 .add("status", "Deleted successfully!")

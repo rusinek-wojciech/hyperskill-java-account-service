@@ -3,6 +3,7 @@ package account.model.user;
 import account.model.Payment;
 import account.repository.RoleRepository;
 import lombok.*;
+import org.hibernate.annotations.NaturalId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String lastname;
 
+    @NaturalId
     @Column(nullable = false, unique = true)
     private String username;
 

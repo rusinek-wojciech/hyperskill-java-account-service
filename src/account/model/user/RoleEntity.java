@@ -1,6 +1,7 @@
 package account.model.user;
 
 import lombok.*;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NaturalId
     @Column(nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
     private Role role;

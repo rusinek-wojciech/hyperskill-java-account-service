@@ -5,7 +5,6 @@ import account.exception.ValidException;
 import account.model.Payment;
 import account.model.user.Role;
 import account.model.user.User;
-import account.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -13,33 +12,12 @@ import java.util.Set;
 
 public class Validators {
 
-    private static final Set<String> breachedPasswords = Set.of(
-            "PasswordForJanuary",
-            "PasswordForFebruary",
-            "PasswordForMarch",
-            "PasswordForApril",
-            "PasswordForMay",
-            "PasswordForJune",
-            "PasswordForJuly",
-            "PasswordForAugust",
-            "PasswordForSeptember",
-            "PasswordForOctober",
-            "PasswordForNovember",
-            "PasswordForDecember"
-    );
-
     public static void validatePeriod(String period) {
         if (period == null) {
             throw new ValidException("Period cannot be null");
         }
         if (!period.matches("(0?[1-9]|1[0-2])-\\d+")) {
             throw new ValidException("Period invalid format");
-        }
-    }
-
-    public static void validatePasswordBreached(String password) {
-        if (breachedPasswords.contains(password)) {
-            throw new ValidException("The password is in the hacker's database!");
         }
     }
 
@@ -64,7 +42,7 @@ public class Validators {
                 .map(String::toLowerCase)
                 .distinct()
                 .count();
-        if (users == 1) {
+        if (users != 1L) {
             throw new ValidException("Should be only one employee");
         }
     }

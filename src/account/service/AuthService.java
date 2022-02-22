@@ -35,7 +35,6 @@ public class AuthService {
         log.info("Registering \"" + createUserDto.getEmail() + "\" as " + role);
         createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
 
-        Validators.validatePasswordBreached(createUserDto.getPassword());
         if (userRepository.findByUsername(createUserDto.getEmail()).isPresent()) {
             throw new ValidException("User exist!");
         }
@@ -48,7 +47,6 @@ public class AuthService {
     @Transactional
     public ResponseEntity<?> changePassword(User user, String password) {
         log.info("Changing password \"" + user.getUsername() + "\"");
-        Validators.validatePasswordBreached(password);
         Validators.validatePasswordSame(password, user, passwordEncoder);
         userRepository.updatePassword(passwordEncoder.encode(password), user.getUsername());
         return ResponseStatus.builder()

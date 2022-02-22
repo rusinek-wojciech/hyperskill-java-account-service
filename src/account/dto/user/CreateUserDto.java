@@ -1,6 +1,8 @@
 package account.dto.user;
 
 import javax.validation.constraints.*;
+
+import account.validator.BreachedPassword;
 import lombok.*;
 
 @Data
@@ -26,6 +28,7 @@ public class CreateUserDto {
     @NotNull(message = "Name cannot be null")
     @NotBlank(message = "Name cannot be blank")
     @Size(min = 12, max = 100, message = "Password length must be 12 chars minimum!")
+    @BreachedPassword
     private String password;
 
 }

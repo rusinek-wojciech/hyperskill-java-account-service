@@ -56,6 +56,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .hasAnyRole(ACCOUNTANT.name())
                 .antMatchers(HttpMethod.PUT, "/api/acct/payments")
                 .hasAnyRole(ACCOUNTANT.name())
+                // SecurityController
+                .antMatchers("/api/security/**")
+                .hasAnyRole(AUDITOR.name())
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -64,8 +67,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, ex) ->
-                response.sendError(HttpStatus.FORBIDDEN.value(), "Access Denied!");
+        return (request, response, ex) -> {
+            response.sendError(HttpStatus.FORBIDDEN.value(), "Access Denied!");
+        };
     }
 
 }

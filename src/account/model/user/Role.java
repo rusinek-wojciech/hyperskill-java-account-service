@@ -11,7 +11,8 @@ public enum Role implements GrantedAuthority {
 
     USER(RoleGroup.BUSINESS),
     ACCOUNTANT(RoleGroup.BUSINESS),
-    ADMINISTRATOR(RoleGroup.ADMINISTRATIVE);
+    ADMINISTRATOR(RoleGroup.ADMINISTRATIVE),
+    AUDITOR(RoleGroup.BUSINESS);
 
     private final RoleGroup group;
 
@@ -28,4 +29,5 @@ public enum Role implements GrantedAuthority {
     public String toString() {
         return name();
     }
+
 }

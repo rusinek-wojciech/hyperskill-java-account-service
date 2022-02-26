@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,10 @@ public class Mapper {
                 .name(user.getName())
                 .lastname(user.getLastname())
                 .email(user.getUsername())
-                .roles(user.getRoles().stream().map(Role::getAuthority).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream()
+                        .map(Role::getAuthority)
+                        .sorted(String::compareTo)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .build();
     }
 

@@ -1,5 +1,5 @@
 package account.model.user;
 
 public enum RoleGroup {
-    ADMINISTRATIVE, BUSINESS
+    ADMINISTRATIVE, BUSINESS, NONE
 }

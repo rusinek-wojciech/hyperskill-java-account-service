@@ -1,5 +1,8 @@
 package account.config;
 
+import account.model.event.Action;
+import account.model.user.User;
+import account.service.EventService;
 import account.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,19 +14,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
 import static account.model.user.Role.*;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = false)
 @AllArgsConstructor
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     private final RestAuthEntryPoint restAuthEntryPoint;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final EventService eventService;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -68,6 +73,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return (request, response, ex) -> {
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            eventService.log(Action.ACCESS_DENIED, user);
             response.sendError(HttpStatus.FORBIDDEN.value(), "Access Denied!");
         };
     }

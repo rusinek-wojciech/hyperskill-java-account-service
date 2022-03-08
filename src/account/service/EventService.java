@@ -34,7 +34,16 @@ public class EventService {
     }
 
     public void log(Action action, String object, User user) {
-        this.log(action, object, user.getUsername());
+        this.log(action, object, user.getEmail());
+    }
+
+    public void log(Action action, User user) {
+        this.log(action, user.getEmail());
+    }
+
+    public void log(Action action, String username) {
+        String object = request.getRequestURI().substring(request.getContextPath().length());
+        this.log(action, object, username);
     }
 
     public List<Event> getAllEvents() {

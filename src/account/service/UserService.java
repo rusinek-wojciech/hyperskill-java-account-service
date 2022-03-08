@@ -1,23 +1,21 @@
 package account.service;
 
 import account.dto.user.GetUserDto;
-import account.dto.user.UpdateLockUserDto;
-import account.dto.user.UpdateRoleUserDto;
 import account.exception.ValidException;
+import account.listener.AuthFailureListener;
 import account.mapper.Mapper;
 import account.model.event.Action;
 import account.model.user.Role;
 import account.model.user.User;
 import account.repository.RoleRepository;
 import account.repository.UserRepository;
-import account.util.AppUtils;
-import account.util.ResponseStatus;
 import account.validator.Validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -36,11 +34,24 @@ public class UserService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final Mapper mapper;
     private final EventService eventService;
+    private final LoginAttemptService attemptService;
 
     @Override
-    public User loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username.toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
+    public User loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("Logging + " + email);
+        String[] split = mapper.splitEmail(email);
+        var exception = new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
+        if (split.length != 2) {
+            throw exception;
+        }
+        String username = split[0];
+        String mail = split[1];
+        if (!mail.equals(User.MAIL)) {
+            attemptService.loginFailed(email);
+            throw new BadCredentialsException(email);
+        }
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> exception);
     }
 
     public List<GetUserDto> getAllUsers() {
@@ -50,95 +61,79 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
-    public GetUserDto changeUserRole(UpdateRoleUserDto dto, User user) {
-        Role role = AppUtils.valueOf(Role.class, dto.getRole());
-        UpdateRoleUserDto.Operation operation =
-                AppUtils.valueOf(UpdateRoleUserDto.Operation.class, dto.getOperation());
-        switch (operation) {
-            case GRANT:
-                return grantRole(role, dto.getUser(), user);
-            case REMOVE:
-                return removeRole(role, dto.getUser(), user);
-            default:
-                throw new IllegalStateException();
-        }
+    public GetUserDto grantRole(Role role, String email, User subjectUser) {
+        User user = loadUserByUsername(email);
+        return this.grantRole(role, user, subjectUser);
     }
 
-    private GetUserDto grantRole(Role role, String username, User subjectUser) {
-        User user = loadUserByUsername(username);
+    public GetUserDto grantRole(Role role, User user, User subjectUser) {
         if (user.getUserRoleGroup() != role.getGroup()) {
             throw new ValidException("The user cannot combine administrative and business roles!");
         }
         user.addRole(role, roleRepository);
         eventService.log(
                 Action.GRANT_ROLE,
-                "Grant role " + role + " to " + user.getUsername(),
+                "Grant role " + role + " to " + user.getEmail(),
                 subjectUser
         );
         return mapper.userToGetUserDto(userRepository.save(user));
     }
 
-    private GetUserDto removeRole(Role role, String username, User subjectUser) {
-        User user = loadUserByUsername(username);
+    public GetUserDto removeRole(Role role, String email, User subjectUser) {
+        User user = loadUserByUsername(email);
+        return this.removeRole(role, user, subjectUser);
+    }
+
+    public GetUserDto removeRole(Role role, User user, User subjectUser) {
         Validators.validateRemoveUserRole(user.getRoles(), role);
         user.removeRole(role);
         eventService.log(
                 Action.REMOVE_ROLE,
-                "Remove role " + role + " from " + username,
+                "Remove role " + role + " from " + user.getEmail(),
                 subjectUser
         );
         return mapper.userToGetUserDto(userRepository.save(user));
     }
 
     @Transactional
-    public ResponseEntity<?> deleteUser(String username, User subjectUser) {
-        User user = loadUserByUsername(username);
+    public void deleteUser(String email, User subjectUser) {
+        User user = loadUserByUsername(email);
+        this.deleteUser(user, subjectUser);
+    }
+
+    @Transactional
+    public void deleteUser(User user, User subjectUser) {
         if (user.getRoles().contains(Role.ADMINISTRATOR)) {
             throw new ValidException("Can't remove ADMINISTRATOR role!");
         }
-        log.info("Deleting user \"" + username + "\"");
-        userRepository.deleteByUsername(username);
-        eventService.log(Action.DELETE_USER, username, subjectUser);
-        return ResponseStatus.builder()
-                .add("status", "Deleted successfully!")
-                .add("user", username)
-                .build();
+        userRepository.deleteByUsername(user.getUsername());
+        eventService.log(Action.DELETE_USER, user.getEmail(), subjectUser);
     }
 
-    public ResponseEntity<?> lockOrUnlock(UpdateLockUserDto dto,  User subjectUser) {
-        UpdateLockUserDto.Operation operation =
-                AppUtils.valueOf(UpdateLockUserDto.Operation.class, dto.getOperation());
-        switch (operation) {
-            case LOCK:
-                lock(dto.getUser(), subjectUser);
-                return ResponseStatus.builder()
-                        .add("status", "User " + dto.getUser() + " locked!")
-                        .build();
-            case UNLOCK:
-                unlock(dto.getUser(), subjectUser);
-                return ResponseStatus.builder()
-                        .add("status", "User " + dto.getUser() + " unlocked!")
-                        .build();
-            default:
-                throw new IllegalStateException();
-        }
+    public void lock(String email, User subjectUser) {
+        User user = loadUserByUsername(email);
+        this.lock(user, subjectUser);
     }
 
-    public void lock(String username, User subjectUser) {
-        User user = loadUserByUsername(username);
+    public void lock(User user, User subjectUser) {
         if (user.getRoles().contains(Role.ADMINISTRATOR)) {
             throw new ValidException("Can't lock the ADMINISTRATOR!");
         }
         user.setAccountNonLocked(false);
         userRepository.save(user);
-        eventService.log(Action.LOCK_USER, "Lock user " + user.getUsername(), subjectUser);
+        eventService.log(Action.LOCK_USER, "Lock user " + user.getEmail(), subjectUser);
     }
 
-    public void unlock(String username, User subjectUser) {
-        User user = loadUserByUsername(username);
+    public void unlock(String email, User subjectUser) {
+        User user = loadUserByUsername(email);
+        this.unlock(user, subjectUser);
+    }
+
+    public void unlock(User user, User subjectUser) {
         user.setAccountNonLocked(true);
+        attemptService.clean(user.getEmail());
         userRepository.save(user);
-        eventService.log(Action.UNLOCK_USER, "Unlock user " + user.getUsername(), subjectUser);
+        eventService.log(Action.UNLOCK_USER, "Unlock user " + user.getEmail(), subjectUser);
     }
 
 }

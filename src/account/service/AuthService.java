@@ -9,10 +9,8 @@ import account.model.user.Role;
 import account.repository.RoleRepository;
 import account.model.user.User;
 import account.repository.UserRepository;
-import account.util.ResponseStatus;
 import account.validator.Validators;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,32 +27,32 @@ public class AuthService {
     private final Mapper mapper;
     private final EventService eventService;
 
-    public GetUserDto register(CreateUserDto createUserDto) {
+    public GetUserDto register(CreateUserDto dto) {
+        String username = mapper.emailToUsername(dto.getEmail());
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new ValidException("User exist!");
+        }
+        String encodedPassword = passwordEncoder.encode(dto.getPassword());
         Role role = userRepository.count() == 0L
                 ? Role.ADMINISTRATOR
                 : Role.USER;
-        createUserDto.setEmail(createUserDto.getEmail().toLowerCase());
-
-        if (userRepository.findByUsername(createUserDto.getEmail()).isPresent()) {
-            throw new ValidException("User exist!");
-        }
-
-        createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
-        User user = mapper.createUserDtoToUser(createUserDto, Set.of(role), roleRepository);
-        eventService.log(Action.CREATE_USER, user.getUsername(), (String) null);
+        User user = User.builder()
+                .name(dto.getName())
+                .lastname(dto.getLastname())
+                .username(username)
+                .password(encodedPassword)
+                .roles(Set.of(role), roleRepository)
+                .build();
+        eventService.log(Action.CREATE_USER, user.getEmail(), (String) null);
         return mapper.userToGetUserDto(userRepository.save(user));
     }
 
     @Transactional
-    public ResponseEntity<?> changePassword(User user, String password) {
+    public User changePassword(User user, String password) {
         Validators.validatePasswordSame(password, user, passwordEncoder);
-        userRepository.updatePassword(passwordEncoder.encode(password), user.getUsername());
-        eventService.log(Action.CHANGE_PASSWORD, user.getUsername(), user);
-        return ResponseStatus.builder()
-                .add("email", user.getUsername())
-                .add("status", "The password has been updated successfully")
-                .build();
+        user.setPassword(passwordEncoder.encode(password));
+        eventService.log(Action.CHANGE_PASSWORD, user.getEmail(), user);
+        return userRepository.save(user);
     }
-
 
 }

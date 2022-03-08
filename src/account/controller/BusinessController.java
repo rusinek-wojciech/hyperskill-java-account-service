@@ -3,6 +3,7 @@ package account.controller;
 import account.dto.payment.PostPaymentDto;
 import account.model.user.User;
 import account.service.BusinessService;
+import account.util.ResponseStatus;
 import account.util.ValidList;
 import account.validator.Validators;
 import lombok.AllArgsConstructor;
@@ -32,12 +33,18 @@ public class BusinessController {
 
     @PostMapping("acct/payments")
     public ResponseEntity<?> uploadPayment(@Valid @RequestBody ValidList<PostPaymentDto> payments) {
-        return businessService.uploadPayment(payments);
+        businessService.uploadPayment(payments);
+        return ResponseStatus.builder()
+                .add("status", "Added successfully!")
+                .build();
     }
 
     @PutMapping("acct/payments")
     public ResponseEntity<?> updatePayment(@Valid @RequestBody PostPaymentDto payment) {
-        return businessService.updatePayment(payment);
+        businessService.updatePayment(payment);
+        return ResponseStatus.builder()
+                .add("status", "Updated successfully!")
+                .build();
     }
 
 }

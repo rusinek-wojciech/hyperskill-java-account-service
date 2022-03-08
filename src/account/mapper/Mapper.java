@@ -2,19 +2,16 @@ package account.mapper;
 
 import account.dto.payment.GetPaymentDto;
 import account.dto.payment.PostPaymentDto;
-import account.dto.user.CreateUserDto;
 import account.dto.user.GetUserDto;
 import account.model.Payment;
 import account.model.user.Role;
 import account.model.user.User;
-import account.repository.RoleRepository;
 import account.service.UserService;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,7 +22,7 @@ public class Mapper {
                 .id(user.getId())
                 .name(user.getName())
                 .lastname(user.getLastname())
-                .email(user.getUsername())
+                .email(user.getEmail())
                 .roles(user.getRoles().stream()
                         .map(Role::getAuthority)
                         .sorted(String::compareTo)
@@ -33,23 +30,11 @@ public class Mapper {
                 .build();
     }
 
-
-    public User createUserDtoToUser(CreateUserDto createUserDto,
-                                    Set<Role> roles,
-                                    RoleRepository roleRepository) {
-        return User.builder()
-                .name(createUserDto.getName())
-                .lastname(createUserDto.getLastname())
-                .username(createUserDto.getEmail())
-                .password(createUserDto.getPassword())
-                .roles(roles, roleRepository)
-                .build();
-    }
-
     public Payment postPaymentDtoToPayment(PostPaymentDto postPaymentDto,
                                            UserService userService) {
+        User user = userService.loadUserByUsername(emailToUsername(postPaymentDto.getEmployee()));
         return Payment.builder()
-                .user(userService.loadUserByUsername(postPaymentDto.getEmployee().toLowerCase()))
+                .user(user)
                 .salary(postPaymentDto.getSalary())
                 .period(periodToLocalDate(postPaymentDto.getPeriod()))
                 .build();
@@ -73,5 +58,13 @@ public class Mapper {
         int month = Integer.parseInt(data[0]);
         int year = Integer.parseInt(data[1]);
         return LocalDate.of(year, month, 1);
+    }
+
+    public String emailToUsername(String email) {
+        return splitEmail(email)[0];
+    }
+
+    public String[] splitEmail(String email) {
+        return email.toLowerCase().split("@");
     }
 }

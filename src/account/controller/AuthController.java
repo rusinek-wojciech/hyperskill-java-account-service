@@ -6,6 +6,8 @@ import account.dto.user.GetUserDto;
 import account.model.user.User;
 import account.service.AuthService;
 import javax.validation.Valid;
+
+import account.util.ResponseStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,14 +21,18 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("signup")
-    public GetUserDto register(@RequestBody @Valid CreateUserDto createUserDto) {
-        return authService.register(createUserDto);
+    public GetUserDto register(@RequestBody @Valid CreateUserDto dto) {
+        return authService.register(dto);
     }
 
     @PostMapping("changepass")
-    public ResponseEntity<?> changePassword(@RequestBody @Valid UpdatePasswordUserDto updatePasswordUserDto,
+    public ResponseEntity<?> changePassword(@RequestBody @Valid UpdatePasswordUserDto dto,
                                             @AuthenticationPrincipal User user) {
-        return authService.changePassword(user, updatePasswordUserDto.getNewPassword());
+        User changedUser = authService.changePassword(user, dto.getNewPassword());
+        return ResponseStatus.builder()
+                .add("email", changedUser.getEmail())
+                .add("status", "The password has been updated successfully")
+                .build();
     }
 
 }

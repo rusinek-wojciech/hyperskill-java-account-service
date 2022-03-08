@@ -38,7 +38,6 @@ public class UserService implements UserDetailsService {
 
     @Override
     public User loadUserByUsername(String email) throws UsernameNotFoundException {
-        System.out.println("Logging + " + email);
         String[] split = mapper.splitEmail(email);
         var exception = new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         if (split.length != 2) {

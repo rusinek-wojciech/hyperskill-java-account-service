@@ -42,12 +42,10 @@ public class LoginAttemptService {
     }
 
     public void loginSucceeded(User user) {
-        System.out.println("Login success " + user.getEmail());
         attempts.invalidate(user.getEmail());
     }
 
     public void loginFailed(String email) {
-        System.out.println("Login failed " + email);
         eventService.log(Action.LOGIN_FAILED, email);
         attempts.put(email, Optional.ofNullable(attempts.getIfPresent(email))
                 .map(n -> n + 1)

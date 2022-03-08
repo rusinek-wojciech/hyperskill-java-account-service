@@ -22,6 +22,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Modifying
     @Query("UPDATE Payment p SET p.salary = :salary WHERE p.period = :period AND p.user = :user")
     void updatePaymentByUserAndPeriod(@Param("user") User user,
-                       @Param("period") LocalDate period,
-                       @Param("salary") Long salary);
+                                      @Param("period") LocalDate period,
+                                      @Param("salary") Long salary);
 }

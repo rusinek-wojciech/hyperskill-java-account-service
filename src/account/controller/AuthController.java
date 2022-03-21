@@ -35,4 +35,9 @@ public class AuthController {
                 .build();
     }
 
+    @GetMapping("login")
+    public GetUserDto login(@AuthenticationPrincipal User user) {
+        return authService.getCurrentUser(user);
+    }
+
 }

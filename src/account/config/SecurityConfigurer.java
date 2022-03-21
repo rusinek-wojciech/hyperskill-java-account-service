@@ -54,6 +54,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.POST, "/api/auth/changepass")
                 .hasAnyRole(USER.name(), ACCOUNTANT.name(), ADMINISTRATOR.name())
+                .antMatchers(HttpMethod.GET, "/api/auth/login")
+                .authenticated()
                 // BusinessController
                 .antMatchers(HttpMethod.GET, "/api/empl/payment")
                 .hasAnyRole(USER.name(), ACCOUNTANT.name())

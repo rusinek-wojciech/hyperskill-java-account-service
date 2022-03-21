@@ -55,4 +55,8 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    public GetUserDto getCurrentUser(User user) {
+        return mapper.userToGetUserDto(user);
+    }
+
 }

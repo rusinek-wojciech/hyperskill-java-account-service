@@ -15,5 +15,6 @@ public class GetUserDto {
     private String lastname;
     private String email;
     private Set<String> roles;
+    private boolean accountNonLocked;
 
 }

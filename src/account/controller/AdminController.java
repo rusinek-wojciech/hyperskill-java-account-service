@@ -3,8 +3,6 @@ package account.controller;
 import account.dto.user.GetUserDto;
 import account.dto.user.UpdateLockUserDto;
 import account.dto.user.UpdateRoleUserDto;
-import account.exception.ValidException;
-import account.mapper.Mapper;
 import account.model.user.Role;
 import account.model.user.User;
 import account.service.UserService;

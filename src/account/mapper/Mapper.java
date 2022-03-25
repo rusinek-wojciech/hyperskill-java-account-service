@@ -27,6 +27,7 @@ public class Mapper {
                         .map(Role::getAuthority)
                         .sorted(String::compareTo)
                         .collect(Collectors.toCollection(LinkedHashSet::new)))
+                .accountNonLocked(user.getAccountNonLocked())
                 .build();
     }
 

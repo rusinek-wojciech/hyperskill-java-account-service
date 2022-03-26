@@ -53,6 +53,14 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> exception);
     }
 
+    public GetUserDto getUserById(long id) {
+        return userRepository.findById(id)
+                .stream()
+                .map(mapper::userToGetUserDto)
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
+    }
+
     public List<GetUserDto> getAllUsers() {
         return userRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
                 .stream()

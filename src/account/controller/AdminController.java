@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -50,8 +51,13 @@ public class AdminController {
     }
 
     @GetMapping("user")
-    public List<GetUserDto> getUser() {
+    public List<GetUserDto> getUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("user/{id}")
+    public GetUserDto getUser(@PathVariable long id) {
+        return userService.getUserById(id);
     }
 
     @PutMapping("user/access")
